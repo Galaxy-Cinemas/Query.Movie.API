@@ -1,0 +1,49 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.8.34330.188
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Galaxi.Query.Movie.API", "Galaxi.Movie.API\Galaxi.Query.Movie.API.csproj", "{DDD126A7-1E90-4DF4-914E-ECCDD5DFFACB}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Galaxi.Query.Movie.Data", "Galaxi.Movie.Data\Galaxi.Query.Movie.Data.csproj", "{49AB08F3-56D6-493F-8A5C-04B736233BBD}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Galaxi.Query.Movie.Domain", "Galaxi.Movie.Domain\Galaxi.Query.Movie.Domain.csproj", "{C399B9BA-4733-4445-BFED-26BC45790B6C}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Galaxi.Query.Movie.Persistence", "Galaxi.Movie.Persistence\Galaxi.Query.Movie.Persistence.csproj", "{A570FBC3-5F26-4D4E-940A-268AD4027F87}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Galaxi.Query.Bus.Message", "Galaxi.Bus.Message\Galaxi.Query.Bus.Message.csproj", "{CC815FC5-8BB8-4B95-9867-AB6B271CD4EC}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{DDD126A7-1E90-4DF4-914E-ECCDD5DFFACB}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{DDD126A7-1E90-4DF4-914E-ECCDD5DFFACB}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{DDD126A7-1E90-4DF4-914E-ECCDD5DFFACB}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{DDD126A7-1E90-4DF4-914E-ECCDD5DFFACB}.Release|Any CPU.Build.0 = Release|Any CPU
+		{49AB08F3-56D6-493F-8A5C-04B736233BBD}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{49AB08F3-56D6-493F-8A5C-04B736233BBD}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{49AB08F3-56D6-493F-8A5C-04B736233BBD}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{49AB08F3-56D6-493F-8A5C-04B736233BBD}.Release|Any CPU.Build.0 = Release|Any CPU
+		{C399B9BA-4733-4445-BFED-26BC45790B6C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{C399B9BA-4733-4445-BFED-26BC45790B6C}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{C399B9BA-4733-4445-BFED-26BC45790B6C}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{C399B9BA-4733-4445-BFED-26BC45790B6C}.Release|Any CPU.Build.0 = Release|Any CPU
+		{A570FBC3-5F26-4D4E-940A-268AD4027F87}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{A570FBC3-5F26-4D4E-940A-268AD4027F87}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{A570FBC3-5F26-4D4E-940A-268AD4027F87}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{A570FBC3-5F26-4D4E-940A-268AD4027F87}.Release|Any CPU.Build.0 = Release|Any CPU
+		{CC815FC5-8BB8-4B95-9867-AB6B271CD4EC}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{CC815FC5-8BB8-4B95-9867-AB6B271CD4EC}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{CC815FC5-8BB8-4B95-9867-AB6B271CD4EC}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{CC815FC5-8BB8-4B95-9867-AB6B271CD4EC}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {E47B3AE4-BFB5-4367-A5A5-723DA77775FC}
+	EndGlobalSection
+EndGlobal
