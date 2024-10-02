@@ -1,4 +1,4 @@
-﻿namespace Galaxi.Movie.Domain.DTOs
+﻿namespace Galaxi.Query.Movie.Domain.DTOs
 {
     public class FilmSummaryDTO
     {

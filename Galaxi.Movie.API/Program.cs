@@ -1,9 +1,7 @@
 using Galaxi.Movie.Persistence;
 using System.Reflection;
 using MediatR;
-using Galaxi.Movie.Domain.Profiles;
 using Microsoft.EntityFrameworkCore;
-using Galaxi.Movie.Persistence.Repositorys;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
@@ -12,6 +10,8 @@ using Serilog.Events;
 using Serilog.Extensions.Logging;
 using MassTransit;
 using Galaxi.Movie.Domain.IntegrationEvents.Consumers;
+using Galaxi.Query.Movie.Domain.Profiles;
+using Galaxi.Query.Movie.Persistence.Repositorys;
 
 var builder = WebApplication.CreateBuilder(args);
 

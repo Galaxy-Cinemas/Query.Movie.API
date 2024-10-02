@@ -1,4 +1,4 @@
-﻿namespace Galaxi.Movie.Domain.Response
+﻿namespace Galaxi.Query.Movie.Domain.Response
 {
     public class ResponseHandler<T>
     {
@@ -39,7 +39,7 @@
             {
                 Success = false,
                 Message = message,
-                Errors =  error ,
+                Errors = error,
                 StatusCode = 400 //  Bad Request
             };
         }

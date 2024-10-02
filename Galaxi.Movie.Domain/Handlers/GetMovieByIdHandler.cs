@@ -1,12 +1,12 @@
 ﻿using AutoMapper;
-using Galaxi.Movie.Data.Models;
-using Galaxi.Movie.Domain.DTOs;
-using Galaxi.Movie.Domain.Infrastructure.Queries;
-using Galaxi.Movie.Persistence.Repositorys;
+using Galaxi.Query.Movie.Data.Models;
+using Galaxi.Query.Movie.Domain.DTOs;
+using Galaxi.Query.Movie.Domain.Infrastructure.Queries;
+using Galaxi.Query.Movie.Persistence.Repositorys;
 using MediatR;
 using Microsoft.Extensions.Logging;
 
-namespace Galaxi.Movie.Domain.Handlers
+namespace Galaxi.Query.Movie.Domain.Handlers
 {
     public class GetMovieByIdHandler
          : IRequestHandler<GetMovieByIdQuery, FilmDetailsDTO>
