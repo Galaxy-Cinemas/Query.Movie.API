@@ -1,12 +1,11 @@
 ﻿using AutoMapper;
-using Galaxi.Movie.Domain.DTOs;
-using Galaxi.Movie.Domain.Infrastructure.Queries;
 using Galaxi.Movie.Persistence.Persistence;
-using Galaxi.Movie.Persistence.Repositorys;
+using Galaxi.Query.Movie.Domain.DTOs;
+using Galaxi.Query.Movie.Domain.Infrastructure.Queries;
+using Galaxi.Query.Movie.Persistence.Repositorys;
 using MediatR;
-using Microsoft.EntityFrameworkCore;
 
-namespace Galaxi.Movie.Domain.Handlers
+namespace Galaxi.Query.Movie.Domain.Handlers
 {
     public class GetAllMoviesHandler : IRequestHandler<GetAllMoviesQuery, IEnumerable<FilmSummaryDTO>>
     {
@@ -22,12 +21,12 @@ namespace Galaxi.Movie.Domain.Handlers
         public async Task<IEnumerable<FilmSummaryDTO>> Handle(GetAllMoviesQuery request, CancellationToken cancellationToken)
         {
             var movies = await _repo.GetAllMoviesAsync();
-            if (movies == null || !movies.Any()) 
+            if (movies == null || !movies.Any())
             {
                 throw new KeyNotFoundException();
             }
 
-                var movieViewModel = _mapper.Map<List<FilmSummaryDTO>>(movies);
+            var movieViewModel = _mapper.Map<List<FilmSummaryDTO>>(movies);
 
             return movieViewModel;
         }

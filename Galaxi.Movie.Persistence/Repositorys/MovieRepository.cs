@@ -1,12 +1,12 @@
-﻿using Galaxi.Movie.Data.Models;
-using Galaxi.Movie.Persistence.Persistence;
+﻿using Galaxi.Movie.Persistence.Persistence;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Caching.Distributed;
 using Newtonsoft.Json;
 using Microsoft.Extensions.Logging;
 using StackExchange.Redis;
+using Galaxi.Query.Movie.Data.Models;
 
-namespace Galaxi.Movie.Persistence.Repositorys
+namespace Galaxi.Query.Movie.Persistence.Repositorys
 {
     public class MovieRepository : IMovieRepository
     {

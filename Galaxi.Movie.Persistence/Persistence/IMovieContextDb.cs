@@ -1,4 +1,4 @@
-﻿using Galaxi.Movie.Data.Models;
+﻿using Galaxi.Query.Movie.Data.Models;
 using Microsoft.EntityFrameworkCore;
 
 namespace Galaxi.Movie.Persistence.Persistence

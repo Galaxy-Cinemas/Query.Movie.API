@@ -1,6 +1,6 @@
 ﻿using Galaxi.Bus.Message;
-using Galaxi.Movie.Data.Models;
-using Galaxi.Movie.Persistence.Repositorys;
+using Galaxi.Query.Movie.Data.Models;
+using Galaxi.Query.Movie.Persistence.Repositorys;
 using MassTransit;
 
 namespace Galaxi.Movie.Domain.IntegrationEvents.Consumers
