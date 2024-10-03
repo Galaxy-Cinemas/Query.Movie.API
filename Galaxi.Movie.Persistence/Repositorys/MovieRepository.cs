@@ -55,13 +55,21 @@ namespace Galaxi.Query.Movie.Persistence.Repositorys
                 return cacheMovie;
             }
 
-            var movie = await _context.Movie.FirstOrDefaultAsync(u => u.FilmId == id);
+            var movie = await _elasticsearch.SearchAsync<Film>(s => s
+                           .Index("films")
+                           .Query(q => q
+                               .Term(t => t
+                                   .Field(f => f.FilmId)
+                                   .Value(id.ToString())
+                               )
+                           )
+                       );
 
-            if (movie != null)
+            if (movie.Documents.FirstOrDefault() != null)
             {
-                _ = SetCacheAsync(movie, cacheKey);
+                _ = SetCacheAsync(movie.Documents.FirstOrDefault(), cacheKey);
             }
-            return movie;
+            return movie.Documents.FirstOrDefault();
         }
 
         public async Task<IEnumerable<Film>> GetAllMoviesAsync()
@@ -201,11 +209,6 @@ namespace Galaxi.Query.Movie.Persistence.Repositorys
 
             _log.LogInformation($"{films.Count()} movies were created successfully");
 
-        }
-
-        public Task MigrateAsync()
-        {
-            throw new NotImplementedException();
         }
     }
 }
