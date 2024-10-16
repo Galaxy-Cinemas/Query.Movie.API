@@ -1,7 +1,5 @@
-using Galaxi.Movie.Persistence;
 using System.Reflection;
 using MediatR;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
@@ -13,6 +11,7 @@ using Galaxi.Query.Movie.Domain.Profiles;
 using Galaxi.Query.Movie.Persistence.Repositorys;
 using Elastic.Clients.Elasticsearch;
 using Galaxi.Query.Movie.Domain.IntegrationEvents.Consumers;
+using Galaxi.Bus.Message;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -58,6 +57,9 @@ builder.Services.AddMassTransit(x =>
 {
     x.AddConsumer<CheckAvailableMovieConsumer>();
     x.AddConsumer<MigrationMovieConsumer>();
+    x.AddConsumer<UpdateMovieConsumer>();
+    x.AddConsumer<AddMovieConsumer>();
+    x.AddConsumer<DeleteMovieConsumer>();
 
     x.UsingAzureServiceBus((context, cfg) =>
     {
@@ -72,7 +74,6 @@ builder.Services.AddStackExchangeRedisCache(options =>
     options.Configuration = builder.Configuration.GetConnectionString("RedisConnection");
 });
 
-builder.Services.AddInfrastructure(configuration);
 builder.Services.AddAutoMapper(typeof(MovieProfile).Assembly);
 builder.Services.AddScoped<IMovieRepository, MovieRepository>();
 builder.Services.AddMediatR(Assembly.Load("Galaxi.Query.Movie.Domain"));

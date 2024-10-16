@@ -29,4 +29,18 @@ namespace Galaxi.Bus.Message
     {
         public IEnumerable<Film> Movies { get; init; }
     }
+
+    public record UpdateMovie
+    {
+        public Film film { get; init; }
+    }
+    public record AddMovie
+    {
+        public Film film { get; init; }
+    }
+
+    public record DeleteMovie
+    {
+        public Film film { get; init; }
+    }
 }

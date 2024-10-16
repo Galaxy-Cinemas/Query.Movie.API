@@ -6,7 +6,6 @@ namespace Galaxi.Query.Movie.Persistence.Repositorys
     {
         Task<IEnumerable<Film>> GetAllMoviesAsync();
         Task<Film> GetMovieByIdAsync(Guid id);
-
         Task MigrateELKAsync(IEnumerable<Film> films);
     }
 }
