@@ -25,7 +25,7 @@ namespace Galaxi.Query.Movie.Persistence.Repositorys
         public async Task Add(Film movie)
         {
             _log.LogInformation($"Creating new movie with ID (elasticSearch) {movie.FilmId}");
-            var response = await _elasticsearch.IndexAsync<Film>(movie, idx => idx.Index("films"));
+            var addMovie = await _elasticsearch.IndexAsync<Film>(movie, idx => idx.Index("films"));
 
             await RemoveCacheAsync(movie.FilmId);
         }
@@ -34,9 +34,19 @@ namespace Galaxi.Query.Movie.Persistence.Repositorys
         {
             _log.LogInformation($"Delete movie with movieId (elasticSearch) {movie.FilmId}");
 
-            var searchResponse = await GetMovieByIdAsync(movie.FilmId);
+            var searchResponse = await _elasticsearch.SearchAsync<Film>(s => s
+               .Index("films")
+               .Query(q => q
+                   .Term(t => t
+                       .Field(f => f.FilmId)
+                       .Value(movie.FilmId.ToString())
+                   )
+               )
+           );
 
-            var updateResponse = await _elasticsearch.DeleteAsync<Film>(searchResponse.FilmId, u => u
+            var hit = searchResponse.Hits.FirstOrDefault();
+
+            var deleteResponse = await _elasticsearch.DeleteAsync<Film>(hit.Id, u => u
                 .Index("films")
             );
 
@@ -49,23 +59,6 @@ namespace Galaxi.Query.Movie.Persistence.Repositorys
 
 
             var searchResponse = await GetMovieByIdAsync(movie.FilmId);
-
-            //var searchResponse = await _elasticsearch.SearchAsync<Film>(s => s
-            //    .Index("films")
-            //    .Query(q => q
-            //        .Term(t => t
-            //            .Field(f => f.FilmId)
-            //            .Value(movie.FilmId.ToString())
-            //        )
-            //    )
-            //);
-
-            //var hit = searchResponse.Hits.FirstOrDefault();
-
-            //if (hit == null)
-            //{
-            //    return NotFound("Product not found.");
-            //}
 
             var updateResponse = await _elasticsearch.UpdateAsync<ElasticsearchClient, Film>(searchResponse.FilmId, u => u
                 .Index("films")
