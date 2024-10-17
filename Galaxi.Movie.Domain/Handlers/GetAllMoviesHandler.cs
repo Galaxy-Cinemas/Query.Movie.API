@@ -1,5 +1,4 @@
 ﻿using AutoMapper;
-using Galaxi.Movie.Persistence.Persistence;
 using Galaxi.Query.Movie.Domain.DTOs;
 using Galaxi.Query.Movie.Domain.Infrastructure.Queries;
 using Galaxi.Query.Movie.Persistence.Repositorys;
@@ -9,7 +8,6 @@ namespace Galaxi.Query.Movie.Domain.Handlers
 {
     public class GetAllMoviesHandler : IRequestHandler<GetAllMoviesQuery, IEnumerable<FilmSummaryDTO>>
     {
-        private readonly MovieContextDb _context;
         private readonly IMovieRepository _repo;
         private readonly IMapper _mapper;
 

@@ -1,6 +1,4 @@
-﻿using Galaxi.Movie.Persistence.Persistence;
-using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Caching.Distributed;
+﻿using Microsoft.Extensions.Caching.Distributed;
 using Newtonsoft.Json;
 using Microsoft.Extensions.Logging;
 using StackExchange.Redis;
@@ -11,16 +9,14 @@ namespace Galaxi.Query.Movie.Persistence.Repositorys
 {
     public class MovieRepository : IMovieRepository
     {
-        private readonly MovieContextDb _context;
         private readonly IDistributedCache _cache;
         private readonly ILogger<MovieRepository> _log;
         private readonly ElasticsearchClient _elasticsearch;
         private readonly TimeSpan _cacheExpiration = TimeSpan.FromMinutes(10);
         private const string _cacheKeyAllMovies = "movies_all";
 
-        public MovieRepository(MovieContextDb context, IDistributedCache cache, ILogger<MovieRepository> log, ElasticsearchClient elasticsearch)
+        public MovieRepository( IDistributedCache cache, ILogger<MovieRepository> log, ElasticsearchClient elasticsearch)
         {
-            _context = context;
             _cache = cache;
             _log = log;
             _elasticsearch = elasticsearch;
@@ -28,19 +24,47 @@ namespace Galaxi.Query.Movie.Persistence.Repositorys
 
         public async Task Add(Film movie)
         {
-            _context.Add(movie);
+            _log.LogInformation($"Creating new movie with ID (elasticSearch) {movie.FilmId}");
+            var addMovie = await _elasticsearch.IndexAsync<Film>(movie, idx => idx.Index("films"));
+
             await RemoveCacheAsync(movie.FilmId);
         }
 
         public async Task Delete(Film movie)
         {
-            _context.Movie.Remove(movie);
+            _log.LogInformation($"Delete movie with movieId (elasticSearch) {movie.FilmId}");
+
+            var searchResponse = await _elasticsearch.SearchAsync<Film>(s => s
+               .Index("films")
+               .Query(q => q
+                   .Term(t => t
+                       .Field(f => f.FilmId)
+                       .Value(movie.FilmId.ToString())
+                   )
+               )
+           );
+
+            var hit = searchResponse.Hits.FirstOrDefault();
+
+            var deleteResponse = await _elasticsearch.DeleteAsync<Film>(hit.Id, u => u
+                .Index("films")
+            );
+
             await RemoveCacheAsync(movie.FilmId);
         }
 
-        public async Task Update(Film movie)
+        public async Task UpdateMovieAsync(Film movie)
         {
-            _context.Update(movie);
+            _log.LogInformation($"Updating movie with movie ID (elasticSearch) {movie.FilmId}");
+
+
+            var searchResponse = await GetMovieByIdAsync(movie.FilmId);
+
+            var updateResponse = await _elasticsearch.UpdateAsync<ElasticsearchClient, Film>(searchResponse.FilmId, u => u
+                .Index("films")
+                .Doc(movie)
+            );
+
             await RemoveCacheAsync(movie.FilmId);
         }
 
@@ -94,12 +118,6 @@ namespace Galaxi.Query.Movie.Persistence.Repositorys
 
             return movies.Documents;
         }
-
-        public async Task<bool> SaveAll()
-        {
-            return await _context.SaveChangesAsync() > 0;
-        }
-
 
         private async Task SetCacheAsync<T>(T entity, string cacheKey)
         {
@@ -169,17 +187,15 @@ namespace Galaxi.Query.Movie.Persistence.Repositorys
                          .Properties(p => p
                              .Keyword(k => k
                                  .FilmId
-                             )
-                         )
+                                 ))
               ));
             }
             catch (Exception)
             {
-                _log.LogWarning($"Failed to create index to the ElasticSearch ");
-
+                _log.LogWarning($"Failed to create index to the ElasticSearch");
             }
 
-            _log.LogInformation($"Creating {films.Count()} films in bulk ");
+            _log.LogInformation($"Creating {films.Count()} films in bulk");
 
             foreach (var film in films)
             {
@@ -201,14 +217,10 @@ namespace Galaxi.Query.Movie.Persistence.Repositorys
             }
             catch (Exception)
             {
-
                 _log.LogError($"Failed to insert documents into elasticSearch");
             }
 
-           
-
             _log.LogInformation($"{films.Count()} movies were created successfully");
-
         }
     }
 }
