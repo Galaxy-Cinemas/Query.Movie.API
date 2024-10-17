@@ -1,43 +1,70 @@
-﻿using Galaxi.Movie.Data.Models;
-using Galaxi.Movie.Persistence.Persistence;
-using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Caching.Distributed;
+﻿using Microsoft.Extensions.Caching.Distributed;
 using Newtonsoft.Json;
 using Microsoft.Extensions.Logging;
 using StackExchange.Redis;
+using Galaxi.Query.Movie.Data.Models;
+using Elastic.Clients.Elasticsearch;
 
-namespace Galaxi.Movie.Persistence.Repositorys
+namespace Galaxi.Query.Movie.Persistence.Repositorys
 {
     public class MovieRepository : IMovieRepository
     {
-        private readonly MovieContextDb _context;
         private readonly IDistributedCache _cache;
         private readonly ILogger<MovieRepository> _log;
+        private readonly ElasticsearchClient _elasticsearch;
         private readonly TimeSpan _cacheExpiration = TimeSpan.FromMinutes(10);
         private const string _cacheKeyAllMovies = "movies_all";
 
-        public MovieRepository(MovieContextDb context, IDistributedCache cache, ILogger<MovieRepository> log)
+        public MovieRepository( IDistributedCache cache, ILogger<MovieRepository> log, ElasticsearchClient elasticsearch)
         {
-            _context = context;
             _cache = cache;
             _log = log;
+            _elasticsearch = elasticsearch;
         }
 
         public async Task Add(Film movie)
         {
-            _context.Add(movie);
+            _log.LogInformation($"Creating new movie with ID (elasticSearch) {movie.FilmId}");
+            var addMovie = await _elasticsearch.IndexAsync<Film>(movie, idx => idx.Index("films"));
+
             await RemoveCacheAsync(movie.FilmId);
         }
 
         public async Task Delete(Film movie)
         {
-            _context.Movie.Remove(movie);
+            _log.LogInformation($"Delete movie with movieId (elasticSearch) {movie.FilmId}");
+
+            var searchResponse = await _elasticsearch.SearchAsync<Film>(s => s
+               .Index("films")
+               .Query(q => q
+                   .Term(t => t
+                       .Field(f => f.FilmId)
+                       .Value(movie.FilmId.ToString())
+                   )
+               )
+           );
+
+            var hit = searchResponse.Hits.FirstOrDefault();
+
+            var deleteResponse = await _elasticsearch.DeleteAsync<Film>(hit.Id, u => u
+                .Index("films")
+            );
+
             await RemoveCacheAsync(movie.FilmId);
         }
 
-        public async Task Update(Film movie)
+        public async Task UpdateMovieAsync(Film movie)
         {
-            _context.Update(movie);
+            _log.LogInformation($"Updating movie with movie ID (elasticSearch) {movie.FilmId}");
+
+
+            var searchResponse = await GetMovieByIdAsync(movie.FilmId);
+
+            var updateResponse = await _elasticsearch.UpdateAsync<ElasticsearchClient, Film>(searchResponse.FilmId, u => u
+                .Index("films")
+                .Doc(movie)
+            );
+
             await RemoveCacheAsync(movie.FilmId);
         }
 
@@ -52,13 +79,21 @@ namespace Galaxi.Movie.Persistence.Repositorys
                 return cacheMovie;
             }
 
-            var movie = await _context.Movie.FirstOrDefaultAsync(u => u.FilmId == id);
+            var movie = await _elasticsearch.SearchAsync<Film>(s => s
+                           .Index("films")
+                           .Query(q => q
+                               .Term(t => t
+                                   .Field(f => f.FilmId)
+                                   .Value(id.ToString())
+                               )
+                           )
+                       );
 
-            if (movie != null)
+            if (movie.Documents.FirstOrDefault() != null)
             {
-                _ = SetCacheAsync(movie, cacheKey);
+                _ = SetCacheAsync(movie.Documents.FirstOrDefault(), cacheKey);
             }
-            return movie;
+            return movie.Documents.FirstOrDefault();
         }
 
         public async Task<IEnumerable<Film>> GetAllMoviesAsync()
@@ -70,21 +105,19 @@ namespace Galaxi.Movie.Persistence.Repositorys
                 return cacheMovies;
             }
 
-            var movies = await _context.Movie.ToListAsync();
+            var movies = await _elasticsearch.SearchAsync<Film>(s => s
+                                .Index("films")
+                                .Query(q => q.MatchAll(Ma => Ma = Ma))
+                                .Size(1000)
+                            );
 
-            if (movies != null && movies.Any())
+            if (movies != null && movies.Documents.Any())
             {
                 _ = SetCacheAsync(movies, _cacheKeyAllMovies);
             }
 
-            return movies;
+            return movies.Documents;
         }
-
-        public async Task<bool> SaveAll()
-        {
-            return await _context.SaveChangesAsync() > 0;
-        }
-
 
         private async Task SetCacheAsync<T>(T entity, string cacheKey)
         {
@@ -145,10 +178,49 @@ namespace Galaxi.Movie.Persistence.Repositorys
             }
         }
 
-        public async Task MigrateAsync()
+        public async Task MigrateELKAsync(IEnumerable<Film> films)
         {
-            await _context.Database.MigrateAsync();
-        }
+            try
+            {
+                await _elasticsearch.Indices.CreateAsync<Film>("films", c => c
+                     .Mappings(m => m
+                         .Properties(p => p
+                             .Keyword(k => k
+                                 .FilmId
+                                 ))
+              ));
+            }
+            catch (Exception)
+            {
+                _log.LogWarning($"Failed to create index to the ElasticSearch");
+            }
 
+            _log.LogInformation($"Creating {films.Count()} films in bulk");
+
+            foreach (var film in films)
+            {
+                if (film.FilmId == Guid.Empty)
+                {
+                    film.FilmId = Guid.NewGuid();
+                }
+            }
+
+            try
+            {
+                var bulkResponse = await _elasticsearch.BulkAsync(b => b
+                           .Index("films")
+                           .IndexMany(films, (descriptor, film) => descriptor
+                               .Index("films")
+                               .Id(film.FilmId.ToString())
+                           )
+                       );
+            }
+            catch (Exception)
+            {
+                _log.LogError($"Failed to insert documents into elasticSearch");
+            }
+
+            _log.LogInformation($"{films.Count()} movies were created successfully");
+        }
     }
 }

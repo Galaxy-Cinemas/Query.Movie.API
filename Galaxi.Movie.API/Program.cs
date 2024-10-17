@@ -1,9 +1,5 @@
-using Galaxi.Movie.Persistence;
 using System.Reflection;
 using MediatR;
-using Galaxi.Movie.Domain.Profiles;
-using Microsoft.EntityFrameworkCore;
-using Galaxi.Movie.Persistence.Repositorys;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
@@ -11,7 +7,11 @@ using Serilog;
 using Serilog.Events;
 using Serilog.Extensions.Logging;
 using MassTransit;
-using Galaxi.Movie.Domain.IntegrationEvents.Consumers;
+using Galaxi.Query.Movie.Domain.Profiles;
+using Galaxi.Query.Movie.Persistence.Repositorys;
+using Elastic.Clients.Elasticsearch;
+using Galaxi.Query.Movie.Domain.IntegrationEvents.Consumers;
+using Galaxi.Bus.Message;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -45,9 +45,21 @@ builder.Services.AddLogging(logginBuilder =>
 
 });
 
+builder.Services.AddScoped(provider =>
+{
+    var settings = new ElasticsearchClientSettings(new Uri(builder.Configuration.GetConnectionString("ElasticSearchConnection")))
+        .DefaultIndex("products");
+
+    return new ElasticsearchClient(settings);
+});
+
 builder.Services.AddMassTransit(x =>
 {
     x.AddConsumer<CheckAvailableMovieConsumer>();
+    x.AddConsumer<MigrationMovieConsumer>();
+    x.AddConsumer<UpdateMovieConsumer>();
+    x.AddConsumer<AddMovieConsumer>();
+    x.AddConsumer<DeleteMovieConsumer>();
 
     x.UsingAzureServiceBus((context, cfg) =>
     {
@@ -62,7 +74,6 @@ builder.Services.AddStackExchangeRedisCache(options =>
     options.Configuration = builder.Configuration.GetConnectionString("RedisConnection");
 });
 
-builder.Services.AddInfrastructure(configuration);
 builder.Services.AddAutoMapper(typeof(MovieProfile).Assembly);
 builder.Services.AddScoped<IMovieRepository, MovieRepository>();
 builder.Services.AddMediatR(Assembly.Load("Galaxi.Query.Movie.Domain"));

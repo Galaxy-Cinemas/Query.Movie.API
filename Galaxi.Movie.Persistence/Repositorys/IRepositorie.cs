@@ -1,13 +1,11 @@
-﻿using Galaxi.Movie.Data.Models;
+﻿using Galaxi.Query.Movie.Data.Models;
 
-namespace Galaxi.Movie.Persistence.Repositorys
+namespace Galaxi.Query.Movie.Persistence.Repositorys
 {
     public interface IRepository
     {
         Task Add(Film movie);
         Task Delete(Film movie);
-        Task Update(Film movie);
-        Task<bool> SaveAll();
-        Task MigrateAsync();
+        Task UpdateMovieAsync(Film movie);
     }
 }

@@ -1,10 +1,11 @@
-﻿using Galaxi.Movie.Data.Models;
+﻿using Galaxi.Query.Movie.Data.Models;
 
-namespace Galaxi.Movie.Persistence.Repositorys
+namespace Galaxi.Query.Movie.Persistence.Repositorys
 {
     public interface IMovieRepository : IRepository
     {
         Task<IEnumerable<Film>> GetAllMoviesAsync();
         Task<Film> GetMovieByIdAsync(Guid id);
+        Task MigrateELKAsync(IEnumerable<Film> films);
     }
 }

@@ -1,4 +1,6 @@
-﻿namespace Galaxi.Bus.Message
+﻿using Galaxi.Query.Movie.Data.Models;
+
+namespace Galaxi.Bus.Message
 {
     public record TickedCreated
     {
@@ -21,5 +23,24 @@
     public record MovieStatus
     {
         public bool Exist { get; init; }
+    }
+
+    public record MigrationMovies
+    {
+        public IEnumerable<Film> Movies { get; init; }
+    }
+
+    public record UpdateMovie
+    {
+        public Film film { get; init; }
+    }
+    public record AddMovie
+    {
+        public Film film { get; init; }
+    }
+
+    public record DeleteMovie
+    {
+        public Film film { get; init; }
     }
 }

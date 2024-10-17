@@ -1,9 +1,8 @@
 ﻿using AutoMapper;
-using Galaxi.Movie.Data.Models;
-using Galaxi.Movie.Domain.DTOs;
-using Galaxi.Movie.Domain.Infrastructure.Commands;
+using Galaxi.Query.Movie.Data.Models;
+using Galaxi.Query.Movie.Domain.DTOs;
 
-namespace Galaxi.Movie.Domain.Profiles
+namespace Galaxi.Query.Movie.Domain.Profiles
 {
     public class MovieProfile : Profile
     {
@@ -11,10 +10,6 @@ namespace Galaxi.Movie.Domain.Profiles
         {
             CreateMap<Film, FilmDetailsDTO>();
             CreateMap<Film, FilmSummaryDTO>();
-            CreateMap<Film, CreatedFilmReponseDTO>();
-
-            CreateMap<CreatedMovieCommand, Film>();
-            CreateMap<UpdateMovieCommand, Film>();
         }
     }
 }

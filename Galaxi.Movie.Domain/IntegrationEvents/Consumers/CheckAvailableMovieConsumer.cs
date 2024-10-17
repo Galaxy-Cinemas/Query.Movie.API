@@ -1,9 +1,9 @@
 ﻿using Galaxi.Bus.Message;
-using Galaxi.Movie.Data.Models;
-using Galaxi.Movie.Persistence.Repositorys;
+using Galaxi.Query.Movie.Data.Models;
+using Galaxi.Query.Movie.Persistence.Repositorys;
 using MassTransit;
 
-namespace Galaxi.Movie.Domain.IntegrationEvents.Consumers
+namespace Galaxi.Query.Movie.Domain.IntegrationEvents.Consumers
 {
     public class CheckAvailableMovieConsumer : IConsumer<CheckAvailableMovie>
     {
@@ -19,7 +19,8 @@ namespace Galaxi.Movie.Domain.IntegrationEvents.Consumers
 
             var exist = movie != null;
 
-            await context.RespondAsync(new MovieStatus {
+            await context.RespondAsync(new MovieStatus
+            {
                 Exist = exist
             });
 
