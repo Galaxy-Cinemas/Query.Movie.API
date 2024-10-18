@@ -28,6 +28,7 @@ builder.Services.AddLogging(logginBuilder =>
                            .MinimumLevel.Debug()
                            .MinimumLevel.Override("Microsoft", LogEventLevel.Warning)
                            .MinimumLevel.Override("Microsoft.AspNetCore", LogEventLevel.Warning)
+                           .Enrich.WithProperty("ElasticSearch", "Enabled")
                            .WriteTo.File
                            (
                                 path: "/app/samba/logs/logs-movie-Serilog-.json",
