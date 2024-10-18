@@ -4,6 +4,7 @@ using Microsoft.Extensions.Logging;
 using StackExchange.Redis;
 using Galaxi.Query.Movie.Data.Models;
 using Elastic.Clients.Elasticsearch;
+using Elastic.Clients.Elasticsearch.QueryDsl;
 
 namespace Galaxi.Query.Movie.Persistence.Repositorys
 {
@@ -15,7 +16,7 @@ namespace Galaxi.Query.Movie.Persistence.Repositorys
         private readonly TimeSpan _cacheExpiration = TimeSpan.FromMinutes(10);
         private const string _cacheKeyAllMovies = "movies_all";
 
-        public MovieRepository( IDistributedCache cache, ILogger<MovieRepository> log, ElasticsearchClient elasticsearch)
+        public MovieRepository(IDistributedCache cache, ILogger<MovieRepository> log, ElasticsearchClient elasticsearch)
         {
             _cache = cache;
             _log = log;
@@ -58,14 +59,32 @@ namespace Galaxi.Query.Movie.Persistence.Repositorys
             _log.LogInformation($"Updating movie with movie ID (elasticSearch) {movie.FilmId}");
 
 
-            var searchResponse = await GetMovieByIdAsync(movie.FilmId);
+            var searchResponse = await GetIdDocElasticByMovieId(movie.FilmId);
 
-            var updateResponse = await _elasticsearch.UpdateAsync<ElasticsearchClient, Film>(searchResponse.FilmId, u => u
+            var updateResponse = await _elasticsearch.UpdateAsync<ElasticsearchClient, Film>(searchResponse, u => u
                 .Index("films")
                 .Doc(movie)
             );
 
             await RemoveCacheAsync(movie.FilmId);
+        }
+
+        protected async Task<string> GetIdDocElasticByMovieId(Guid FilmId)
+        {
+            var searchResponse = await _elasticsearch.SearchAsync<Film>(s => s
+               .Index("films")
+               .Query(q => q
+                   .Term(t => t
+                       .Field(f => f.FilmId)
+                       .Value(FilmId.ToString())
+                   )
+               )
+           );
+
+            var hit = searchResponse.Hits.FirstOrDefault();
+
+            return hit.Id;
+
         }
 
         public async Task<Film> GetMovieByIdAsync(Guid id)
@@ -113,11 +132,42 @@ namespace Galaxi.Query.Movie.Persistence.Repositorys
 
             if (movies != null && movies.Documents.Any())
             {
-                _ = SetCacheAsync(movies, _cacheKeyAllMovies);
+                _ = SetCacheAsync(movies.Documents, _cacheKeyAllMovies);
             }
 
             return movies.Documents;
         }
+
+        public async Task<IEnumerable<Film>> GetMovieByQuery(string query)
+        {
+            string cacheQueryKey = $"Movie_query_{query}";
+
+            var cacheMovies = await GetCacheAsync<IEnumerable<Film>>(cacheQueryKey);
+
+            if (cacheMovies != null)
+            {
+                return cacheMovies;
+            }
+
+            var searchMovieResponse = await _elasticsearch.SearchAsync<Film>(s => s
+                    .Query(q => q
+                        .SimpleQueryString(sqs => sqs
+                            .Query($"*{query}*")
+                            .Fields(new[] { "title^3", "genre^2", "description^1" })
+                            .DefaultOperator(Operator.And)
+                            .AnalyzeWildcard(true)
+                        )
+                    )
+                );
+
+            if (searchMovieResponse != null && searchMovieResponse.Documents.Any())
+            {
+                _ = SetCacheAsync(searchMovieResponse.Documents, cacheQueryKey);
+            }
+
+            return searchMovieResponse.Documents;
+        }
+
 
         private async Task SetCacheAsync<T>(T entity, string cacheKey)
         {

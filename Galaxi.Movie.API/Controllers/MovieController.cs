@@ -49,10 +49,36 @@ namespace Galaxi.Query.Movie.API.Controllers
         {
             try
             {
-                _log.LogDebug("Processing movie with Id: {filmId}", filmId);
+                _log.LogDebug($"Processing movie with Id: {filmId}");
                 var movie = await _mediator.Send(new GetMovieByIdQuery(filmId));
                 var successResponse = ResponseHandler<FilmDetailsDTO>.SuccessResponse("Movie retrieved successfully", movie);
                 _log.LogInformation($"Successfully processed GetByMovieId event for MovieId: {movie.FilmId}");
+                return StatusCode(successResponse.StatusCode.Value, successResponse);
+            }
+            catch (InvalidOperationException ex)
+            {
+                _log.LogWarning(ex.Message);
+                var errorResponse = ResponseHandler<string>.ErrorResponse("Failed to save changes to the database.", ex);
+                return StatusCode(errorResponse.StatusCode.Value, errorResponse);
+            }
+            catch (Exception ex)
+            {
+                _log.LogError(ex.Message);
+                var errorResponse = ResponseHandler<string>.ErrorResponse("An internal server error occurred", ex);
+                return StatusCode(errorResponse.StatusCode.Value, errorResponse);
+            }
+        }
+
+
+        [HttpGet("{query}")]
+        public async Task<IActionResult> GetMovieByQuery(string query)
+        {
+            try
+            {
+                _log.LogDebug($"Processing movie with Query: {query}");
+                var searchMovie = await _mediator.Send(new GetMovieByQueryQuery(query));
+                var successResponse = ResponseHandler<IEnumerable<FilmSummaryDTO>>.SuccessResponse("Movies retrieved successfully", searchMovie);
+                _log.LogInformation("Movie retrieved successfully Info");
                 return StatusCode(successResponse.StatusCode.Value, successResponse);
             }
             catch (InvalidOperationException ex)
