@@ -62,9 +62,13 @@ builder.Services.AddMassTransit(x =>
     x.AddConsumer<AddMovieConsumer>();
     x.AddConsumer<DeleteMovieConsumer>();
 
-    x.UsingAzureServiceBus((context, cfg) =>
+    x.UsingRabbitMq((context, cfg) =>
     {
-        cfg.Host(configuration.GetConnectionString("AzureServiceBus"));
+        cfg.Host(configuration.GetConnectionString("rabbitMqSettingsHost"), h =>
+        {
+            h.Username(configuration.GetConnectionString("rabbitMqSettingsUsername"));
+            h.Password(configuration.GetConnectionString("rabbitMqSettingsPassword"));
+        });
 
         cfg.ConfigureEndpoints(context);
     });
